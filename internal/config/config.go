@@ -29,6 +29,8 @@ type Config struct {
 	IgnoreGroups []string `mapstructure:"ignore_groups"`
 	// Include groups ...
 	IncludeGroups []string `mapstructure:"include_groups"`
+	// Only groups includes only the groups provided
+	OnlyGroups []string `mapstructure:"only_groups"`
 	// SyncMethod allow to defined the sync method used to get the user and groups from Google Workspace
 	SyncMethod string `mapstructure:"sync_method"`
 }

@@ -271,6 +271,7 @@ func (s *syncGSuite) SyncGroups(query string) error {
 //  5) validate equals aws an google groups members
 //  6) delete groups in aws, these were deleted in google
 func (s *syncGSuite) SyncGroupsUsers(query string) error {
+	ignoreByDefault := len(s.cfg.OnlyGroups) > 0
 
 	log.WithField("query", query).Info("get google groups")
 	googleGroups, err := s.google.GetGroups(query)
@@ -279,11 +280,20 @@ func (s *syncGSuite) SyncGroupsUsers(query string) error {
 	}
 	filteredGoogleGroups := []*admin.Group{}
 	for _, g := range googleGroups {
-		if s.ignoreGroup(g.Email) {
+		if ignoreByDefault {
+			if s.onlyGroup(g.Email) {
+				log.WithField("group", g.Email).Debug("including group")
+				filteredGoogleGroups = append(filteredGoogleGroups, g)
+				continue
+			}
 			log.WithField("group", g.Email).Debug("ignoring group")
-			continue
+		} else {
+			if s.ignoreGroup(g.Email) {
+				log.WithField("group", g.Email).Debug("ignoring group")
+				continue
+			}
+			filteredGoogleGroups = append(filteredGoogleGroups, g)
 		}
-		filteredGoogleGroups = append(filteredGoogleGroups, g)
 	}
 	googleGroups = filteredGoogleGroups
 
@@ -744,6 +754,16 @@ func (s *syncGSuite) ignoreGroup(name string) bool {
 
 func (s *syncGSuite) includeGroup(name string) bool {
 	for _, g := range s.cfg.IncludeGroups {
+		if g == name {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *syncGSuite) onlyGroup(name string) bool {
+	for _, g := range s.cfg.OnlyGroups {
 		if g == name {
 			return true
 		}
