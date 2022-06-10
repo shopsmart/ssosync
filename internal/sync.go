@@ -286,7 +286,6 @@ func (s *syncGSuite) SyncGroupsUsers(query string) error {
 				filteredGoogleGroups = append(filteredGoogleGroups, g)
 				continue
 			}
-			log.WithField("group", g.Email).Debug("ignoring group")
 		} else {
 			if s.ignoreGroup(g.Email) {
 				log.WithField("group", g.Email).Debug("ignoring group")
